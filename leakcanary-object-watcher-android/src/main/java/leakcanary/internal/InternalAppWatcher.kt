@@ -36,6 +36,10 @@ internal object InternalAppWatcher {
     Handler(Looper.getMainLooper())
   }
 
+  private val isDebuggableBuild by lazy {
+    (application.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+  }
+
   init {
     val internalLeakCanary = try {
       val leakCanaryListener = Class.forName("leakcanary.internal.InternalLeakCanary")
@@ -62,7 +66,9 @@ internal object InternalAppWatcher {
     if (this::application.isInitialized) {
       return
     }
-    SharkLog.logger = DefaultCanaryLog()
+    if (isDebuggableBuild) {
+      SharkLog.logger = DefaultCanaryLog()
+    }
     InternalAppWatcher.application = application
 
     val configProvider = { AppWatcher.config }
